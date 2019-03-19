@@ -367,7 +367,18 @@ void ray_tracing(void *mlx_ptr, char **image_data, t_scene scene)
 }
 
 
+int key_pressed(int key, void *param)
+{
+	t_scene *scene;
 
+	scene = (t_scene *)param;
+
+	if (key == 0xff53)
+	{
+		puts("6");
+		scene->objs[0].center.x += 0.1;
+	}
+}
 
 int main()
 {
@@ -396,8 +407,8 @@ int main()
 
 	mlx_put_image_to_window(mlx_ptr, win_ptr, image, 0, 0);
 
-	mlx_hook(fractal->win_ptr, 2, 1L << 0, key_pressed, &scene);
-	mlx_hook(fractal->win_ptr, 4, 1L << 0, mouse_press, &scene);
+	mlx_hook(win_ptr, 2, 1L << 0, key_pressed, &scene);
+//	mlx_hook(fractal->win_ptr, 4, 1L << 0, mouse_press, &scene);
 //	mlx_hook(fractal->win_ptr, 5, 1L << 0, mouse_release, fractal);
 //	mlx_hook(fractal->win_ptr, 6, 1L << 0, mouse_move, fractal);
 //	mlx_hook(fractal->win_ptr, 17, 1L << 0, close_window, &windows_count);
