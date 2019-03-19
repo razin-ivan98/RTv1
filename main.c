@@ -346,12 +346,11 @@ int cast_ray(t_vector start, t_vector dir, int depth, t_scene scene)
 	return (0xFFFFFF);
 }
 
-void ray_tracing(void *mlx_ptr, char **image_data)
+void ray_tracing(void *mlx_ptr, char **image_data, t_scene scene)
 {
 	int x;
 	int y;
-	t_scene scene;
-	read_scene(&scene, "1.rts");
+	
 	t_vector pixel_pos_3d;
 
 	
@@ -385,13 +384,23 @@ int main()
 	len = SIZE;
 	endian = 0;
 	mlx_ptr = mlx_init();
+
+	t_scene scene;
+	read_scene(&scene, "1.rts");
+
 	win_ptr = mlx_new_window(mlx_ptr, SIZE, SIZE, "RTv1");
 	image = mlx_new_image(mlx_ptr, SIZE, SIZE);
 	image_data = mlx_get_data_addr(image, &bytes, &len, &endian);
 
-	ray_tracing(mlx_ptr, &image_data);
+	ray_tracing(mlx_ptr, &image_data, scene);
 
 	mlx_put_image_to_window(mlx_ptr, win_ptr, image, 0, 0);
+
+	mlx_hook(fractal->win_ptr, 2, 1L << 0, key_pressed, &scene);
+	mlx_hook(fractal->win_ptr, 4, 1L << 0, mouse_press, &scene);
+//	mlx_hook(fractal->win_ptr, 5, 1L << 0, mouse_release, fractal);
+//	mlx_hook(fractal->win_ptr, 6, 1L << 0, mouse_move, fractal);
+//	mlx_hook(fractal->win_ptr, 17, 1L << 0, close_window, &windows_count);
 
 	mlx_loop(mlx_ptr);
 
