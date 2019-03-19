@@ -82,8 +82,8 @@ typedef struct s_scene
 	int c_objs;
 	int c_lights;
 	t_camera camera;
-	t_light lights[4096];
-	t_obj objs[4096];
+	t_light lights[10];
+	t_obj objs[10];
 }		t_scene;
 
 void read_scene(t_scene *scene, char* file_name);

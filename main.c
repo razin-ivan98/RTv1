@@ -1,12 +1,12 @@
 #include "RTv1.h"
 
 #include <stdio.h>
-# define SIZE 500
+# define SIZE 1000
 # define VW 1
 # define VH 1
-# define CW 500
-# define CH 500
-# define DEPTH 3
+# define CW 1000
+# define CH 1000
+# define DEPTH 5
 
 void	put_vector_to_image(char *image_data, int x, int y, int color)
 {
@@ -214,13 +214,13 @@ double compute_lighting(t_vector P, t_vector N, t_vector V, double s, t_obj objs
 				L = lights[i].direction;
 		
 
-			while (j < 6)
+			while (j < 7)
 			{
-				t = ray_intersect_obj(P, L, objs[i]);
+				t = ray_intersect_obj(P, L, objs[j]);
 				if (t != 0.0 && t < shadow_t)
 				{
 					shadow_t = t;
-					shadow_obj = &(objs[i]);
+					shadow_obj = &(objs[j]);
 				}
 				
 				j++;
@@ -287,7 +287,7 @@ int cast_ray(t_vector start, t_vector dir, int depth, t_scene scene)
 	double intensity;
 	double t = 0.0;
 	int i = 0;
-	while (i < 6)
+	while (i < 7)
 	{
 		//printf("\n\n\n%f", scene.objs[0].radius);
 		t = ray_intersect_obj(start, dir, scene.objs[i]);
