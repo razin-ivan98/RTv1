@@ -1,6 +1,8 @@
 #ifndef RTV1_H
 # define RTV1_H
 # include "math.h"
+# include <fcntl.h>
+# include "get_next_line.h"
 # include "mlx.h"
 
 typedef enum
@@ -18,6 +20,8 @@ typedef enum
 	plane,
 	triangle
 }			obj_type;
+
+
 
 typedef struct s_vector
 {
@@ -50,7 +54,10 @@ typedef struct s_obj
 	t_rgb rgb;
 	double specular;
 	double reflective;
+
+	//struct s_obj *next;
 }		t_obj;
+
 
 
 typedef struct s_light
@@ -59,7 +66,29 @@ typedef struct s_light
 	double intensity;
 	t_vector position;
 	t_vector direction;
+
+//	struct s_light *next;
 }				t_light;
+
+typedef struct s_camera
+{
+	t_vector center;
+}		t_camera;
+
+
+
+typedef struct s_scene
+{
+	int c_objs;
+	int c_lights;
+	t_camera camera;
+	t_light lights[4096];
+	t_obj objs[4096];
+}		t_scene;
+
+void read_scene(t_scene *scene, char* file_name);
+
+double ft_atof(char *str);
 
 t_vector vector_normalize(t_vector a);
 t_vector vector_project(t_vector a, t_vector b);

@@ -1,11 +1,11 @@
 #include "RTv1.h"
 
 #include <stdio.h>
-# define SIZE 700
+# define SIZE 500
 # define VW 1
 # define VH 1
-# define CW 700
-# define CH 700
+# define CW 500
+# define CH 500
 # define DEPTH 3
 
 void	put_vector_to_image(char *image_data, int x, int y, int color)
@@ -185,6 +185,7 @@ double compute_lighting(t_vector P, t_vector N, t_vector V, double s, t_obj objs
 	double shadow_t;
 	t_obj *shadow_obj = NULL;
 
+
 	lights[0].type = directional;
 	lights[0].intensity = 0.2;
 	lights[0].direction = vector_init(2.0, 4.0, 4.0);
@@ -196,9 +197,12 @@ double compute_lighting(t_vector P, t_vector N, t_vector V, double s, t_obj objs
 	lights[2].type = ambient;
 	lights[2].intensity = 0.2;
 
+	
+
 	for (int i = 0; i < 3; i++)
 	{
 		shadow_t = 9999;
+		int j = 0;
 		shadow_obj = NULL;
 		if (lights[i].type == ambient)
 			intensity += lights[i].intensity;
@@ -210,16 +214,16 @@ double compute_lighting(t_vector P, t_vector N, t_vector V, double s, t_obj objs
 				L = lights[i].direction;
 		
 
-			for (int j = 0; j <  6; j++)
+			while (j < 6)
 			{
-				t = ray_intersect_obj(P, L, objs[j]);
+				t = ray_intersect_obj(P, L, objs[i]);
 				if (t != 0.0 && t < shadow_t)
 				{
 					shadow_t = t;
 					shadow_obj = &(objs[i]);
 				}
 				
-					
+				j++;
 			}
 			if (shadow_obj)
 				continue ;
@@ -275,74 +279,24 @@ t_vector get_normal(t_vector point, t_obj obj)
 	return (normal);
 }
 
-int cast_ray(t_vector start, t_vector dir, int depth)
+int cast_ray(t_vector start, t_vector dir, int depth, t_scene scene)
 {
-	t_obj obj[7];
+
 	t_obj *closest_obj = NULL;
 	double closest_t = 999999.0;
 	double intensity;
-
 	double t = 0.0;
-	obj[0].type = sphere;
-	obj[0].center = vector_init(0.0, -1.0, 3.0);
-	obj[0].radius = 1.0;
-	obj[0].rgb = color_to_rgb(0xFF0000);
-	obj[0].specular = 100.0;
-	obj[0].reflective = 0.5;
-
-	obj[1].type = sphere;
-	obj[1].center = vector_init(2.0, 0.0, 4.0);
-	obj[1].radius = 1.0;
-	obj[1].rgb = color_to_rgb(0x0000FF);
-	obj[1].specular = 500;
-	obj[1].reflective = 0.3;
-	
-	obj[2].type = sphere;
-	obj[2].center = vector_init(-2.0, 0.0, 4.0);
-	obj[2].radius = 1.0;
-	obj[2].rgb = color_to_rgb(0x00FF00);
-	obj[2].specular = 300;
-	obj[2].reflective = 0.0;
-
-	obj[3].type = sphere;
-	obj[3].center = vector_init(0.0, -5001.0, 0.0);
-	obj[3].radius = 5000.0;
-	obj[3].rgb = color_to_rgb(0xFFFF00);
-	obj[3].specular = 100;
-	obj[3].reflective = 0.1;
-
-	obj[4].type = cone;
-	obj[4].angle = 10.0f * (M_PI / 180);
-	obj[4].dir = vector_normalize(vector_init(2.0, 1.0, 1.0));
-	obj[4].center = vector_init(0.0, 1.5, 4.3);
-	obj[4].rgb = color_to_rgb(0xFF00FF);
-	obj[4].specular = 0;
-	obj[4].reflective = 0.0;
-
-	obj[5].type = cylinder;
-	obj[5].radius = 0.5;
-	obj[5].dir = vector_normalize(vector_init(-0.2, 1.0, 0.8));
-	obj[5].center = vector_init(1.2, 1.5, 4.8);
-	obj[5].rgb = color_to_rgb(0xFF0000);
-	obj[5].specular = 1;
-	obj[5].reflective = 0.0;
-
-	obj[6].type = plane;
-	obj[6].dir = vector_init(0.0, 0.0, 1.0);
-	obj[6].center = vector_init(0, 0, 800);
-	obj[6].rgb = color_to_rgb(0xFF00FF);
-	obj[6].specular = 0;
-	obj[6].reflective = 0.0;
-
-	for (int i = 0; i < 6; i++)
+	int i = 0;
+	while (i < 6)
 	{
-		t = ray_intersect_obj(start, dir, obj[i]);
+		//printf("\n\n\n%f", scene.objs[0].radius);
+		t = ray_intersect_obj(start, dir, scene.objs[i]);
 		if (t != 0.0 && t < closest_t)
 		{
 			closest_t = t;
-			closest_obj = &(obj[i]);
+			closest_obj = &(scene.objs[i]);
 		}
-			
+		i++;
 	}
 
 	if (!closest_obj)
@@ -360,7 +314,7 @@ int cast_ray(t_vector start, t_vector dir, int depth)
 		/*vector_subt(P, closest_obj->center);
 		N = vector_int_div(N, sqrt(scal_mult(N, N)));*/
 
-		intensity = compute_lighting(P, N, vector_int_mult(dir, -1.0), closest_obj->specular, obj);
+		intensity = compute_lighting(P, N, vector_int_mult(dir, -1.0), closest_obj->specular, scene.objs);
 
 
 		if ((closest_obj->rgb.r *= intensity) >= 255.0) 
@@ -377,7 +331,7 @@ int cast_ray(t_vector start, t_vector dir, int depth)
 
 		t_vector R = reflect_ray(vector_int_mult(dir, -1.0), N);
 	
-		t_rgb reflected = color_to_rgb(cast_ray(P, R, depth - 1));
+		t_rgb reflected = color_to_rgb(cast_ray(P, R, depth - 1, scene));
 
 		if ((closest_obj->rgb.r = closest_obj->rgb.r * (1 - closest_obj->reflective) + reflected.r * closest_obj->reflective) > 255.0) 
 			closest_obj->rgb.r = 255.0;
@@ -396,7 +350,8 @@ void ray_tracing(void *mlx_ptr, char **image_data)
 {
 	int x;
 	int y;
-	t_vector camera = vector_init(0.0, 0.0, -2);
+	t_scene scene;
+	read_scene(&scene, "1.rts");
 	t_vector pixel_pos_3d;
 
 	
@@ -406,7 +361,7 @@ void ray_tracing(void *mlx_ptr, char **image_data)
 		{
 			pixel_pos_3d = get_pixel_pisition(x, y);
 			
-				put_vector_to_image(*image_data, x + CW/2, -y + CH/2, cast_ray(camera, pixel_pos_3d, DEPTH));
+				put_vector_to_image(*image_data, x + CW/2, -y + CH/2, cast_ray(scene.camera.center, pixel_pos_3d, DEPTH, scene));
 
 		}
 	}

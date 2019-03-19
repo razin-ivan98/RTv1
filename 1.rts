@@ -1,0 +1,66 @@
+camera_init
+{
+	position = (0.0, 0.0, -2.0)
+}
+
+new object
+{
+	type = sphere;
+	position = (0.0, -1.0, 3.0)
+	radius = 1.0
+	color = 16711680
+	specular = 100.0
+	reflective = 0.5
+}
+
+new object
+{
+	type = sphere;
+	position = (2.0, 0.0, 4.0)
+	radius = 1.0
+	color = 255
+	specular = 500.0
+	reflective = 0.3
+}
+
+new object
+{
+	type = sphere;
+	position = (-2.0, 0.0, 4.0)
+	radius = 1.0
+	color = 65280
+	specular = 300.0
+	reflective = 0.0
+}
+
+new object
+{
+	type = sphere;
+	position = (0.0, -5001.0, 0.0)
+	radius = 5000.0
+	color = 16776960
+	specular = 100.0
+	reflective = 0.1
+}
+
+new object
+{
+	type = cone
+	angle = 0.2
+	direction = (2.0, 1.0, 1.0)
+	position = (0.0, 1.5, 4.3)
+	color = 16711935
+	specular = 0.0
+	reflective = 0.0
+}
+
+new object
+{
+	type = cylinder
+	radius = 0.5
+	direction = (-0.2, 1.0, 0.8)
+	position = (1.2, 1.5, 4.8)
+	color = 16711680
+	specular = 1.0
+	reflective = 0.0
+}
