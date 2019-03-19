@@ -75,3 +75,27 @@ new object
 	specular = 500.0
 	reflective = 0.2
 }
+
+
+new light
+{
+	type = directional
+	intensity = 0.2
+	direction = (2.0, 4.0, 4.0)
+}
+
+new light
+{
+	type = point
+	intensity = 0.6
+	position = (4.0, 5.0, 3.0)
+}
+
+
+new light
+{
+	type = ambient
+	intensity = 0.2
+}
+
+end

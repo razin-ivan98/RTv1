@@ -64,7 +64,7 @@ typedef struct s_light
 {
 	int type;
 	double intensity;
-	t_vector position;
+	t_vector center;
 	t_vector direction;
 
 //	struct s_light *next;
@@ -85,6 +85,17 @@ typedef struct s_scene
 	t_light lights[10];
 	t_obj objs[10];
 }		t_scene;
+
+typedef struct s_RTv1
+{
+	void *mlx_ptr;
+	void *win_ptr;
+	void *image;
+	char *image_data;
+	t_obj *selected;
+
+	t_scene scene;
+}			t_RTv1;
 
 void read_scene(t_scene *scene, char* file_name);
 

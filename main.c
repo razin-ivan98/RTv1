@@ -1,12 +1,12 @@
 #include "RTv1.h"
 
 #include <stdio.h>
-# define SIZE 1000
+# define SIZE 500
 # define VW 1
 # define VH 1
-# define CW 1000
-# define CH 1000
-# define DEPTH 5
+# define CW 500
+# define CH 500
+# define DEPTH 3
 
 void	put_vector_to_image(char *image_data, int x, int y, int color)
 {
@@ -175,17 +175,17 @@ double ray_intersect_obj(t_vector start, t_vector dir, t_obj obj)
 
 }
 
-double compute_lighting(t_vector P, t_vector N, t_vector V, double s, t_obj objs[])
+double compute_lighting(t_vector P, t_vector N, t_vector V, double s, t_scene scene)
 {
 	double intensity = 0.0;
 
-	t_light lights[3];
+	//t_light lights[3];
 	t_vector L;
 	double t;
 	double shadow_t;
 	t_obj *shadow_obj = NULL;
 
-
+/*
 	lights[0].type = directional;
 	lights[0].intensity = 0.2;
 	lights[0].direction = vector_init(2.0, 4.0, 4.0);
@@ -196,31 +196,31 @@ double compute_lighting(t_vector P, t_vector N, t_vector V, double s, t_obj objs
 
 	lights[2].type = ambient;
 	lights[2].intensity = 0.2;
-
+*/
 	
 
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < scene.c_lights; i++)
 	{
 		shadow_t = 9999;
 		int j = 0;
 		shadow_obj = NULL;
-		if (lights[i].type == ambient)
-			intensity += lights[i].intensity;
+		if (scene.lights[i].type == ambient)
+			intensity += scene.lights[i].intensity;
 		else 
 		{
-			if (lights[i].type == point)
-				L = vector_subt(lights[i].position, P);
+			if (scene.lights[i].type == point)
+				L = vector_subt(scene.lights[i].center, P);
 			else 
-				L = lights[i].direction;
+				L = scene.lights[i].direction;
 		
 
-			while (j < 7)
+			while (j < scene.c_objs)
 			{
-				t = ray_intersect_obj(P, L, objs[j]);
+				t = ray_intersect_obj(P, L, scene.objs[j]);
 				if (t != 0.0 && t < shadow_t)
 				{
 					shadow_t = t;
-					shadow_obj = &(objs[j]);
+					shadow_obj = &(scene.objs[j]);
 				}
 				
 				j++;
@@ -234,14 +234,14 @@ double compute_lighting(t_vector P, t_vector N, t_vector V, double s, t_obj objs
 
 			double n_dot_l = scal_mult(N, L);
 			if (n_dot_l > 0.0)
-				intensity += lights[i].intensity * n_dot_l / (sqrt(scal_mult(N, N)) * sqrt(scal_mult(L, L)));
+				intensity += scene.lights[i].intensity * n_dot_l / (sqrt(scal_mult(N, N)) * sqrt(scal_mult(L, L)));
 		
 			if (s > 0.0)
 			{
 				t_vector R = reflect_ray(L, N);
 				double r_dot_v = scal_mult(R, V);
 				if (r_dot_v > 0.0)
-					intensity += lights[i].intensity * pow(r_dot_v / (sqrt(scal_mult(R, R)) * sqrt(scal_mult(V, V))), s);
+					intensity += scene.lights[i].intensity * pow(r_dot_v / (sqrt(scal_mult(R, R)) * sqrt(scal_mult(V, V))), s);
 			}
 		}
 	}
@@ -279,17 +279,39 @@ t_vector get_normal(t_vector point, t_obj obj)
 	return (normal);
 }
 
+t_obj *get_closest_object(t_vector start, t_vector dir, t_scene scene)
+{
+	double t = 0.0;
+	int i = 0;
+	double closest_t = 99999.0;
+	t_obj *closest_obj;
+
+	closest_obj = NULL;
+
+	while (i < scene.c_objs)
+	{
+		t = ray_intersect_obj(start, dir, scene.objs[i]);
+		if (t != 0.0 && t < (closest_t))
+		{
+			(closest_t) = t;
+			closest_obj = &(scene.objs[i]);
+		}
+		i++;
+	}
+	return (closest_obj);
+}
+
 int cast_ray(t_vector start, t_vector dir, int depth, t_scene scene)
 {
 
 	t_obj *closest_obj = NULL;
-	double closest_t = 999999.0;
+	double closest_t;
+	closest_t = 99999.0;
 	double intensity;
 	double t = 0.0;
 	int i = 0;
-	while (i < 7)
+	while (i < scene.c_objs)
 	{
-		//printf("\n\n\n%f", scene.objs[0].radius);
 		t = ray_intersect_obj(start, dir, scene.objs[i]);
 		if (t != 0.0 && t < closest_t)
 		{
@@ -298,13 +320,12 @@ int cast_ray(t_vector start, t_vector dir, int depth, t_scene scene)
 		}
 		i++;
 	}
-
+	//closest_obj = get_closest_object(ptr, start, dir, scene);
 	if (!closest_obj)
 		return(0x000000);
 
 	if (closest_obj)
 	{
-		
 
 		t_vector P = vector_sum(start, vector_int_mult(dir, closest_t));
 
@@ -314,7 +335,7 @@ int cast_ray(t_vector start, t_vector dir, int depth, t_scene scene)
 		/*vector_subt(P, closest_obj->center);
 		N = vector_int_div(N, sqrt(scal_mult(N, N)));*/
 
-		intensity = compute_lighting(P, N, vector_int_mult(dir, -1.0), closest_obj->specular, scene.objs);
+		intensity = compute_lighting(P, N, vector_int_mult(dir, -1.0), closest_obj->specular, scene);
 
 
 		if ((closest_obj->rgb.r *= intensity) >= 255.0) 
@@ -360,33 +381,56 @@ void ray_tracing(void *mlx_ptr, char **image_data, t_scene scene)
 		{
 			pixel_pos_3d = get_pixel_pisition(x, y);
 			
-				put_vector_to_image(*image_data, x + CW/2, -y + CH/2, cast_ray(scene.camera.center, pixel_pos_3d, DEPTH, scene));
+			put_vector_to_image(*image_data, x + CW/2, -y + CH/2, cast_ray(scene.camera.center, pixel_pos_3d, DEPTH, scene));
 
 		}
 	}
 }
 
+int mouse_press(int key, int x, int y, void *param)
+{
+	t_RTv1 *RTv1;
+	t_vector pixel_pos_3d;
+
+
+	RTv1 = (t_RTv1 *)param;
+
+	pixel_pos_3d = get_pixel_pisition(x - CW / 2, -y + CH / 2);
+
+	RTv1->selected = get_closest_object(RTv1->camera.center, pixel_pos_3d, RTv1->scene);
+	puts("lol");
+}
 
 int key_pressed(int key, void *param)
 {
-	t_scene *scene;
+	t_RTv1 *RTv1;
 
-	scene = (t_scene *)param;
+	RTv1 = (t_RTv1 *)param;
+
+	if (!RTv1->selected)
+		RTv1->selected = &(RTv1->scene.objs[0]);
 
 	if (key == 0xff53)
 	{
-		puts("6");
-		scene->objs[0].center.x += 0.1;
+		RTv1->selected->center.x += 0.1;
 	}
+	else if (key ==0xff51)
+	{
+		RTv1->selected->center.x -= 0.1;
+	}
+	else if (key ==0xff52)
+	{
+		RTv1->selected->center.y += 0.1;
+	}
+	else if (key ==0xff54)
+	{
+		RTv1->selected->center.y -= 0.1;
+	}
+	provider(*RTv1);
 }
 
-int main()
+void RTv1_init(t_RTv1 *RTv1, char *file_name)
 {
-	void *mlx_ptr;
-	void *win_ptr;
-	void *image;
-	char *image_data;
-
 	int bytes;
 	int len;
 	int endian;
@@ -394,26 +438,38 @@ int main()
 	bytes = 8;
 	len = SIZE;
 	endian = 0;
-	mlx_ptr = mlx_init();
+	RTv1->mlx_ptr = mlx_init();
+	read_scene(&(RTv1->scene), file_name);
 
-	t_scene scene;
-	read_scene(&scene, "1.rts");
+	RTv1->win_ptr = mlx_new_window(RTv1->mlx_ptr, SIZE, SIZE, "RTv1");
+	RTv1->image = mlx_new_image(RTv1->mlx_ptr, SIZE, SIZE);
+	RTv1->image_data = mlx_get_data_addr(RTv1->image, &bytes, &len, &endian);
+}
 
-	win_ptr = mlx_new_window(mlx_ptr, SIZE, SIZE, "RTv1");
-	image = mlx_new_image(mlx_ptr, SIZE, SIZE);
-	image_data = mlx_get_data_addr(image, &bytes, &len, &endian);
+void provider(t_RTv1 RTv1)
+{
+	ray_tracing(RTv1.mlx_ptr, &(RTv1.image_data), RTv1.scene);
 
-	ray_tracing(mlx_ptr, &image_data, scene);
+	mlx_put_image_to_window(RTv1.mlx_ptr, RTv1.win_ptr, RTv1.image, 0, 0);
+}
 
-	mlx_put_image_to_window(mlx_ptr, win_ptr, image, 0, 0);
+int main(int ac, char **av)
+{
+	t_RTv1 RTv1;
 
-	mlx_hook(win_ptr, 2, 1L << 0, key_pressed, &scene);
-//	mlx_hook(fractal->win_ptr, 4, 1L << 0, mouse_press, &scene);
+	RTv1_init(&RTv1, av[1]);
+
+	provider(RTv1);
+
+	
+
+	mlx_hook(RTv1.win_ptr, 2, 1L << 0, key_pressed, &RTv1);
+	mlx_hook(RTv1.win_ptr, 4, 0L, mouse_press, &RTv1);
 //	mlx_hook(fractal->win_ptr, 5, 1L << 0, mouse_release, fractal);
 //	mlx_hook(fractal->win_ptr, 6, 1L << 0, mouse_move, fractal);
 //	mlx_hook(fractal->win_ptr, 17, 1L << 0, close_window, &windows_count);
 
-	mlx_loop(mlx_ptr);
+	mlx_loop(RTv1.mlx_ptr);
 
 	return (0);
 }

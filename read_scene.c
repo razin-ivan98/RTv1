@@ -56,6 +56,18 @@ void set_obj_type(char *line, t_obj *obj)
 		reading_error();
 }
 
+void set_light_type(char *line, t_light *light)
+{
+	if (strstr(line, "point"))
+		light->type = point;
+	else if (strstr(line, "directional"))
+		light->type = directional;
+	else if (strstr(line, "ambient"))
+		light->type = ambient;
+	else
+		reading_error();
+}
+
 t_obj *read_obj_parameters(char *line, t_obj **obj)
 {
 	if (strchr(line, '}'))
@@ -79,6 +91,23 @@ t_obj *read_obj_parameters(char *line, t_obj **obj)
 	return (*obj);
 }
 
+t_light *read_light_parameters(char *line, t_light **light)
+{
+	if (strchr(line, '}'))
+		return (NULL);
+	else if (strstr(line, "type"))
+		set_light_type(line, *light);
+	else if (strstr(line, "position"))
+		(*light)->center = read_vector(strchr(line, '=') + 1);
+	
+	else if (strstr(line, "direction"))
+		(*light)->direction = vector_normalize(read_vector(strchr(line, '=') + 1));
+	
+	else if (strstr(line, "intensity"))
+		(*light)->intensity = ft_atof(strchr(line, '=') + 1);
+	return (*light);
+}
+
 t_camera *camera_init(char *line, t_camera *camera)
 {
 	if (strchr(line, '}'))
@@ -94,19 +123,22 @@ t_camera *camera_init(char *line, t_camera *camera)
 void read_line_set_scene(char *line, t_scene *scene)
 {
 	static int i = -1;
+	static int j = -1;
 	static t_obj *obj = NULL;
 	static t_light *light = NULL;
 	static t_camera *camera = NULL;
-	if (!strcmp(line, "camera_init"))
+	if (strstr(line, "camera_init"))
 		camera = camera_init(line, &(scene->camera));
 
 
 
 	if (obj)
 	{
-		//puts(line);
 		obj = read_obj_parameters(line, &obj);
-		//printf("color     - %d\n", rgb_to_color(obj->rgb));
+	}
+	else if (light)
+	{
+		light = read_light_parameters(line, &light);
 	}
 
 	else if (camera)
@@ -118,16 +150,20 @@ void read_line_set_scene(char *line, t_scene *scene)
 	{
 		if (strstr(line, "object"))
 		{
-			//puts("new object");
-			//obj = new_object(scene);
 			i++;
 			obj = &(scene->objs[i]);
 		}
 		
-		/*else if (strstr(line, "light"))
+		else if (strstr(line, "light"))
 		{
-			light = new_light(&(scene->lights));
-		}*/
+			j++;
+			light = &(scene->lights[j]);
+		}
+	}
+	else if (!strcmp(line, "end"))
+	{
+		scene->c_objs = i + 1;
+		scene->c_lights = j + 1;
 	}
 	
 }
