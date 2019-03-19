@@ -387,7 +387,7 @@ void ray_tracing(void *mlx_ptr, char **image_data, t_scene scene)
 	}
 }
 
-int mouse_press(int key, int x, int y, void *param)
+int mouse_pressed(int button, int x, int y, void *param)
 {
 	t_RTv1 *RTv1;
 	t_vector pixel_pos_3d;
@@ -399,6 +399,7 @@ int mouse_press(int key, int x, int y, void *param)
 
 	RTv1->selected = get_closest_object(RTv1->camera.center, pixel_pos_3d, RTv1->scene);
 	puts("lol");
+	provider(*RTv1);
 }
 
 int key_pressed(int key, void *param)
@@ -462,9 +463,9 @@ int main(int ac, char **av)
 	provider(RTv1);
 
 	
-
-	mlx_hook(RTv1.win_ptr, 2, 1L << 0, key_pressed, &RTv1);
-	mlx_hook(RTv1.win_ptr, 4, 0L, mouse_press, &RTv1);
+	mlx_mouse_hook(RTv1.win_ptr, mouse_pressed, &RTv1);
+	mlx_hook(RTv1.win_ptr, 2, 4, key_pressed, &RTv1);
+	mlx_hook(RTv1.win_ptr, 4, 1<<8, mouse_pressed, &RTv1);
 //	mlx_hook(fractal->win_ptr, 5, 1L << 0, mouse_release, fractal);
 //	mlx_hook(fractal->win_ptr, 6, 1L << 0, mouse_move, fractal);
 //	mlx_hook(fractal->win_ptr, 17, 1L << 0, close_window, &windows_count);
