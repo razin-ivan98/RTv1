@@ -1,14 +1,14 @@
 #include "RTv1.h"
 
 #include <stdio.h>
-# define SIZE 500
+# define SIZE 1000
 # define VW 1
 # define VH 1
-# define CW 500
-# define CH 500
-# define DEPTH 3
+# define CW 1000
+# define CH 1000
+# define DEPTH 0
 
-void	put_vector_to_image(char *image_data, int x, int y, int color)
+void	put_point_to_image(char *image_data, int x, int y, int color)
 {
 	int	index = 0;
 
@@ -53,7 +53,7 @@ t_vector reflect_ray(t_vector R, t_vector N)
 	return (ret);
 }
 
-double ray_intersect_plane(t_vector start, t_vector dir, t_obj plane)
+double ray_intersect_plane(t_vector start, t_vector dir, t_obj *plane)
 {
 
 
@@ -62,9 +62,9 @@ double ray_intersect_plane(t_vector start, t_vector dir, t_obj plane)
 	double cen_dot_c;
 	double t;
 
-	start = vector_subt(start, plane.center); // перенесем центр координат в центр сферы
-	dir_dot_c = scal_mult(dir, plane.dir);
-	cen_dot_c = scal_mult(start, plane.dir);
+	start = vector_subt(start, plane->center); // перенесем центр координат в центр сферы
+	dir_dot_c = scal_mult(dir, plane->dir);
+	cen_dot_c = scal_mult(start, plane->dir);
 
 	if (dir_dot_c != 0.0)
 	{
@@ -77,7 +77,7 @@ double ray_intersect_plane(t_vector start, t_vector dir, t_obj plane)
 }
 
 
-double ray_intersect_cylinder(t_vector start, t_vector dir, t_obj cyl)
+double ray_intersect_cylinder(t_vector start, t_vector dir, t_obj *cyl)
 {
 	t_ray ray;
 
@@ -87,11 +87,11 @@ double ray_intersect_cylinder(t_vector start, t_vector dir, t_obj cyl)
 	ray.start = start;
 	ray.dir = dir;
 
-	ray.start = vector_subt(ray.start, cyl.center); // перенесем центр координат в центр сферы
-	
-	double a = scal_mult(ray.dir, ray.dir) - scal_mult(ray.dir, cyl.dir) * scal_mult(ray.dir, cyl.dir); // Здесь и далее операция * над векторами - скалярное произведение
-	double b = 2 * (scal_mult(ray.dir, ray.start) - scal_mult(ray.dir, cyl.dir) * scal_mult(ray.start, cyl.dir));
-	double c = scal_mult(ray.start, ray.start) - scal_mult(ray.start, cyl.dir) * scal_mult(ray.start, cyl.dir) - cyl.radius * cyl.radius; 
+	ray.start = vector_subt(ray.start, cyl->center); // перенесем центр координат в центр сферы
+
+	double a = scal_mult(ray.dir, ray.dir) - scal_mult(ray.dir, cyl->dir) * scal_mult(ray.dir, cyl->dir); // Здесь и далее операция * над векторами - скалярное произведение
+	double b = 2 * (scal_mult(ray.dir, ray.start) - scal_mult(ray.dir, cyl->dir) * scal_mult(ray.start, cyl->dir));
+	double c = scal_mult(ray.start, ray.start) - scal_mult(ray.start, cyl->dir) * scal_mult(ray.start, cyl->dir) - cyl->radius * cyl->radius;
 	double D = b*b - 4*a*c; // Дискриминант
 
 	if ( D < zeroThreshold )
@@ -105,7 +105,7 @@ double ray_intersect_cylinder(t_vector start, t_vector dir, t_obj cyl)
 		return (t);
 }
 
-double ray_intersect_cone(t_vector start, t_vector dir, t_obj cone)
+double ray_intersect_cone(t_vector start, t_vector dir, t_obj *cone)
 {
 	t_ray ray;
 
@@ -115,12 +115,12 @@ double ray_intersect_cone(t_vector start, t_vector dir, t_obj cone)
 	ray.start = start;
 	ray.dir = dir;
 
-	ray.start = vector_subt(ray.start, cone.center); // перенесем центр координат в центр сферы
-	double k = tan(cone.angle);
-	
-	double a = scal_mult(ray.dir, ray.dir) - (1 + k * k) * ((scal_mult(ray.dir, cone.dir) * (scal_mult(ray.dir, cone.dir)))); // Здесь и далее операция * над векторами - скалярное произведение
-	double b = 2 * (scal_mult(ray.dir, ray.start) - (1 + k * k) * scal_mult(ray.dir, cone.dir) * scal_mult(ray.start, cone.dir));
-	double c = scal_mult(ray.start, ray.start) - (1 + k * k) * ((scal_mult(ray.start, cone.dir)* (scal_mult(ray.start, cone.dir)))); 
+	ray.start = vector_subt(ray.start, cone->center); // перенесем центр координат в центр сферы
+	double k = tan(cone->angle);
+
+	double a = scal_mult(ray.dir, ray.dir) - (1 + k * k) * ((scal_mult(ray.dir, cone->dir) * (scal_mult(ray.dir, cone->dir)))); // Здесь и далее операция * над векторами - скалярное произведение
+	double b = 2 * (scal_mult(ray.dir, ray.start) - (1 + k * k) * scal_mult(ray.dir, cone->dir) * scal_mult(ray.start, cone->dir));
+	double c = scal_mult(ray.start, ray.start) - (1 + k * k) * ((scal_mult(ray.start, cone->dir)* (scal_mult(ray.start, cone->dir))));
 	double D = b*b - 4*a*c; // Дискриминант
 
 	if ( D < 0.0 )
@@ -135,7 +135,7 @@ double ray_intersect_cone(t_vector start, t_vector dir, t_obj cone)
 }
 
 
-double ray_intersect_sphere(t_vector start, t_vector dir, t_obj obj)
+double ray_intersect_sphere(t_vector start, t_vector dir, t_obj *obj)
 {
 	t_ray ray;
 
@@ -145,10 +145,10 @@ double ray_intersect_sphere(t_vector start, t_vector dir, t_obj obj)
 	ray.start = start;
 	ray.dir = dir;
 
-	ray.start = vector_subt(ray.start, obj.center); // перенесем центр координат в центр сферы
+	ray.start = vector_subt(ray.start, obj->center); // перенесем центр координат в центр сферы
 	double a = scal_mult(ray.dir, ray.dir); // Здесь и далее операция * над векторами - скалярное произведение
 	double b = scal_mult(ray.start, ray.dir);
-	double c = scal_mult(ray.start, ray.start) - obj.radius * obj.radius;
+	double c = scal_mult(ray.start, ray.start) - obj->radius * obj->radius;
 	double D = b*b -a*c; // Дискриминант
 
 	if ( D < zeroThreshold )
@@ -162,20 +162,20 @@ double ray_intersect_sphere(t_vector start, t_vector dir, t_obj obj)
 		return (t);
 }
 
-double ray_intersect_obj(t_vector start, t_vector dir, t_obj obj)
+double ray_intersect_obj(t_vector start, t_vector dir, t_obj *obj)
 {
-	if (obj.type == sphere)
+	if (obj->type == sphere)
 		return (ray_intersect_sphere(start, dir, obj));
-	else if (obj.type == cone)
+	else if (obj->type == cone)
 		return (ray_intersect_cone(start, dir, obj));
-	else if (obj.type == cylinder)
+	else if (obj->type == cylinder)
 		return (ray_intersect_cylinder(start, dir, obj));
-	else if (obj.type == plane)
+	else if (obj->type == plane)
 		return (ray_intersect_plane(start, dir, obj));
 
 }
 
-double compute_lighting(t_vector P, t_vector N, t_vector V, double s, t_scene scene)
+double compute_lighting(t_vector P, t_vector N, t_vector V, double s, t_RTv1 *RTv1)
 {
 	double intensity = 0.0;
 
@@ -197,32 +197,32 @@ double compute_lighting(t_vector P, t_vector N, t_vector V, double s, t_scene sc
 	lights[2].type = ambient;
 	lights[2].intensity = 0.2;
 */
-	
 
-	for (int i = 0; i < scene.c_lights; i++)
+
+	for (int i = 0; i < RTv1->scene.c_lights; i++)
 	{
 		shadow_t = 9999;
 		int j = 0;
 		shadow_obj = NULL;
-		if (scene.lights[i].type == ambient)
-			intensity += scene.lights[i].intensity;
-		else 
+		if (RTv1->scene.lights[i].type == ambient)
+			intensity += RTv1->scene.lights[i].intensity;
+		else
 		{
-			if (scene.lights[i].type == point)
-				L = vector_subt(scene.lights[i].center, P);
-			else 
-				L = scene.lights[i].direction;
-		
+			if (RTv1->scene.lights[i].type == point)
+				L = vector_subt(RTv1->scene.lights[i].center, P);
+			else
+				L = RTv1->scene.lights[i].direction;
 
-			while (j < scene.c_objs)
+
+			while (j < RTv1->scene.c_objs)
 			{
-				t = ray_intersect_obj(P, L, scene.objs[j]);
+				t = ray_intersect_obj(P, L, &(RTv1->scene.objs[j]));
 				if (t != 0.0 && t < shadow_t)
 				{
 					shadow_t = t;
-					shadow_obj = &(scene.objs[j]);
+					shadow_obj = &(RTv1->scene.objs[j]);
 				}
-				
+
 				j++;
 			}
 			if (shadow_obj)
@@ -234,14 +234,14 @@ double compute_lighting(t_vector P, t_vector N, t_vector V, double s, t_scene sc
 
 			double n_dot_l = scal_mult(N, L);
 			if (n_dot_l > 0.0)
-				intensity += scene.lights[i].intensity * n_dot_l / (sqrt(scal_mult(N, N)) * sqrt(scal_mult(L, L)));
-		
+				intensity += RTv1->scene.lights[i].intensity * n_dot_l / (sqrt(scal_mult(N, N)) * sqrt(scal_mult(L, L)));
+
 			if (s > 0.0)
 			{
 				t_vector R = reflect_ray(L, N);
 				double r_dot_v = scal_mult(R, V);
 				if (r_dot_v > 0.0)
-					intensity += scene.lights[i].intensity * pow(r_dot_v / (sqrt(scal_mult(R, R)) * sqrt(scal_mult(V, V))), s);
+					intensity += RTv1->scene.lights[i].intensity * pow(r_dot_v / (sqrt(scal_mult(R, R)) * sqrt(scal_mult(V, V))), s);
 			}
 		}
 	}
@@ -279,110 +279,116 @@ t_vector get_normal(t_vector point, t_obj obj)
 	return (normal);
 }
 
-t_obj *get_closest_object(t_vector start, t_vector dir, t_scene scene)
+t_obj *get_closest_object(double *closest_t, t_vector start, t_vector dir, t_RTv1 *RTv1)
 {
 	double t = 0.0;
 	int i = 0;
-	double closest_t = 99999.0;
-	t_obj *closest_obj;
+	//double closest_t = 99999.0;
+	t_obj *closest_obj = NULL;
 
-	closest_obj = NULL;
 
-	while (i < scene.c_objs)
+
+	while (i < RTv1->scene.c_objs)
 	{
-		t = ray_intersect_obj(start, dir, scene.objs[i]);
-		if (t != 0.0 && t < (closest_t))
+		t = ray_intersect_obj(start, dir, &(RTv1->scene.objs[i]));
+		if (t != 0.0 && t < (*closest_t))
 		{
-			(closest_t) = t;
-			closest_obj = &(scene.objs[i]);
+			(*closest_t) = t;
+			closest_obj = (&RTv1->scene.objs[i]);
 		}
 		i++;
 	}
 	return (closest_obj);
 }
 
-int cast_ray(t_vector start, t_vector dir, int depth, t_scene scene)
+int cast_ray(t_RTv1 *RTv1, t_vector start, t_vector dir, int depth)
 {
 
-	t_obj *closest_obj = NULL;
+	t_obj closest_obj;
+	t_obj *ptr;
 	double closest_t;
 	closest_t = 99999.0;
 	double intensity;
 	double t = 0.0;
 	int i = 0;
-	while (i < scene.c_objs)
+/*
+	closest_obj.type = -1;
+	while (i < RTv1->scene.c_objs)
 	{
-		t = ray_intersect_obj(start, dir, scene.objs[i]);
+
+		t = ray_intersect_obj(start, dir, &(RTv1->scene.objs[i]));
 		if (t != 0.0 && t < closest_t)
 		{
 			closest_t = t;
-			closest_obj = &(scene.objs[i]);
+			closest_obj = RTv1->scene.objs[i];
 		}
 		i++;
-	}
-	//closest_obj = get_closest_object(ptr, start, dir, scene);
-	if (!closest_obj)
+	}*/
+	ptr = get_closest_object(&closest_t, start, dir, RTv1);
+	if (!ptr)
 		return(0x000000);
 
-	if (closest_obj)
+	if (ptr)
 	{
-
+		closest_obj = *ptr;
+		//printf("x %f\n", closest_obj->center.x);
+		//printf("type %d\n", closest_obj->type);
 		t_vector P = vector_sum(start, vector_int_mult(dir, closest_t));
 
 
-		t_vector N = get_normal(P, *closest_obj);
-		
+		t_vector N = get_normal(P, closest_obj);
+
 		/*vector_subt(P, closest_obj->center);
 		N = vector_int_div(N, sqrt(scal_mult(N, N)));*/
 
-		intensity = compute_lighting(P, N, vector_int_mult(dir, -1.0), closest_obj->specular, scene);
+		intensity = compute_lighting(P, N, vector_int_mult(dir, -1.0), closest_obj.specular, RTv1);
 
 
-		if ((closest_obj->rgb.r *= intensity) >= 255.0) 
-			closest_obj->rgb.r = 255.0;
-		if ((closest_obj->rgb.g *= intensity) >= 255.0) 
-			closest_obj->rgb.g = 255.0;
-		if ((closest_obj->rgb.b *= intensity) >= 255.0) 
-			closest_obj->rgb.b = 255.0;
+		if ((closest_obj.rgb.r *= intensity) >= 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g *= intensity) >= 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b *= intensity) >= 255.0)
+			closest_obj.rgb.b = 255.0;
 
-		
-		if (depth <= 0 || closest_obj->reflective <= 0)
-			return (rgb_to_color(closest_obj->rgb));
-		
+
+		if (depth <= 0 || closest_obj.reflective <= 0)
+			return (rgb_to_color(closest_obj.rgb));
+
 
 		t_vector R = reflect_ray(vector_int_mult(dir, -1.0), N);
-	
-		t_rgb reflected = color_to_rgb(cast_ray(P, R, depth - 1, scene));
 
-		if ((closest_obj->rgb.r = closest_obj->rgb.r * (1 - closest_obj->reflective) + reflected.r * closest_obj->reflective) > 255.0) 
-			closest_obj->rgb.r = 255.0;
-		if ((closest_obj->rgb.g = closest_obj->rgb.g * (1 - closest_obj->reflective) + reflected.g * closest_obj->reflective) > 255.0) 
-			closest_obj->rgb.g = 255.0;
-		if ((closest_obj->rgb.b = closest_obj->rgb.b * (1 - closest_obj->reflective) + reflected.b * closest_obj->reflective) > 255.0) 
-			closest_obj->rgb.b = 255.0;
+		t_rgb reflected = color_to_rgb(cast_ray(RTv1, P, R, depth - 1));
+
+		if ((closest_obj.rgb.r = closest_obj.rgb.r * (1 - closest_obj.reflective) + reflected.r * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.r = 255.0;
+		if ((closest_obj.rgb.g = closest_obj.rgb.g * (1 - closest_obj.reflective) + reflected.g * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.g = 255.0;
+		if ((closest_obj.rgb.b = closest_obj.rgb.b * (1 - closest_obj.reflective) + reflected.b * closest_obj.reflective) > 255.0)
+			closest_obj.rgb.b = 255.0;
 
 
-		return (rgb_to_color(closest_obj->rgb));
+		return (rgb_to_color(closest_obj.rgb));
 	}
 	return (0xFFFFFF);
 }
 
-void ray_tracing(void *mlx_ptr, char **image_data, t_scene scene)
+void ray_tracing(t_RTv1 *RTv1)
 {
 	int x;
 	int y;
-	
+
 	t_vector pixel_pos_3d;
 
-	
+
 	for (y = -CH/2; y <= CH/2; y++)
 	{
 		for (x = -CW/2; x <= CW/2; x++)
 		{
 			pixel_pos_3d = get_pixel_pisition(x, y);
-			
-			put_vector_to_image(*image_data, x + CW/2, -y + CH/2, cast_ray(scene.camera.center, pixel_pos_3d, DEPTH, scene));
 
+			put_point_to_image(RTv1->image_data, x + CW/2, -y + CH/2, cast_ray(RTv1, RTv1->scene.camera.center, pixel_pos_3d, DEPTH));
+			//printf("%d\n", cast_ray(RTv1, RTv1->scene.camera.center, pixel_pos_3d, DEPTH));
 		}
 	}
 }
@@ -391,15 +397,18 @@ int mouse_pressed(int button, int x, int y, void *param)
 {
 	t_RTv1 *RTv1;
 	t_vector pixel_pos_3d;
-
-
+	double trash = 99999.0;
+	t_obj *ptr = NULL;
 	RTv1 = (t_RTv1 *)param;
 
 	pixel_pos_3d = get_pixel_pisition(x - CW / 2, -y + CH / 2);
-
-	RTv1->selected = get_closest_object(RTv1->camera.center, pixel_pos_3d, RTv1->scene);
-	puts("lol");
-	provider(*RTv1);
+	ptr = get_closest_object(&trash, RTv1->scene.camera.center, pixel_pos_3d, RTv1);
+	if (ptr)
+		RTv1->selected = ptr;
+	//printf("selected %d\n", RTv1->selected->type);
+	printf("x %d\n", x - CW / 2);
+	printf("y %d\n\n", -y + CH / 2);
+	provider(RTv1);
 }
 
 int key_pressed(int key, void *param)
@@ -411,23 +420,28 @@ int key_pressed(int key, void *param)
 	if (!RTv1->selected)
 		RTv1->selected = &(RTv1->scene.objs[0]);
 
-	if (key == 0xff53)
+	if (key == 0x35)
+	{
+		exit(1);
+	}
+
+	else if (key == 0x7C)
 	{
 		RTv1->selected->center.x += 0.1;
 	}
-	else if (key ==0xff51)
+	else if (key ==0x7B)
 	{
 		RTv1->selected->center.x -= 0.1;
 	}
-	else if (key ==0xff52)
+	else if (key ==0x7E)
 	{
 		RTv1->selected->center.y += 0.1;
 	}
-	else if (key ==0xff54)
+	else if (key ==0x7D)
 	{
 		RTv1->selected->center.y -= 0.1;
 	}
-	provider(*RTv1);
+	provider(RTv1);
 }
 
 void RTv1_init(t_RTv1 *RTv1, char *file_name)
@@ -447,11 +461,11 @@ void RTv1_init(t_RTv1 *RTv1, char *file_name)
 	RTv1->image_data = mlx_get_data_addr(RTv1->image, &bytes, &len, &endian);
 }
 
-void provider(t_RTv1 RTv1)
+void provider(t_RTv1 *RTv1)
 {
-	ray_tracing(RTv1.mlx_ptr, &(RTv1.image_data), RTv1.scene);
+	ray_tracing(RTv1);
 
-	mlx_put_image_to_window(RTv1.mlx_ptr, RTv1.win_ptr, RTv1.image, 0, 0);
+	mlx_put_image_to_window(RTv1->mlx_ptr, RTv1->win_ptr, RTv1->image, 0, 0);
 }
 
 int main(int ac, char **av)
@@ -459,13 +473,14 @@ int main(int ac, char **av)
 	t_RTv1 RTv1;
 
 	RTv1_init(&RTv1, av[1]);
+	//printf("%f", RTv1.scene.lights[0].intensity);
+	//printf("color %d\n", rgb_to_color(RTv1.scene.objs[0].rgb));
+	provider(&RTv1);
 
-	provider(RTv1);
 
-	
-	mlx_mouse_hook(RTv1.win_ptr, mouse_pressed, &RTv1);
+	//mlx_mouse_hook(RTv1.win_ptr, mouse_pressed, &RTv1);
 	mlx_hook(RTv1.win_ptr, 2, 4, key_pressed, &RTv1);
-	mlx_hook(RTv1.win_ptr, 4, 1<<8, mouse_pressed, &RTv1);
+	mlx_hook(RTv1.win_ptr, 4, 0, mouse_pressed, &RTv1);
 //	mlx_hook(fractal->win_ptr, 5, 1L << 0, mouse_release, fractal);
 //	mlx_hook(fractal->win_ptr, 6, 1L << 0, mouse_move, fractal);
 //	mlx_hook(fractal->win_ptr, 17, 1L << 0, close_window, &windows_count);

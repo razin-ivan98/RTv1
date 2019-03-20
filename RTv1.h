@@ -101,6 +101,9 @@ void read_scene(t_scene *scene, char* file_name);
 
 double ft_atof(char *str);
 
+
+void provider(t_RTv1 *RTv1);
+
 t_vector vector_normalize(t_vector a);
 t_vector vector_project(t_vector a, t_vector b);
 t_vector vector_subt(t_vector a, t_vector b);
