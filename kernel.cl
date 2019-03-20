@@ -1,14 +1,193 @@
-#include "RTv1.h"
+#define SIZE 1000
+#define VW 1
+#define VH 1
+#define CW 1000
+#define CH 1000
+#define DEPTH 0
 
-#include <stdio.h>
-# define SIZE 1000
-# define VW 1
-# define VH 1
-# define CW 1000
-# define CH 1000
-# define DEPTH 0
+typedef enum
+{
+	point,
+	directional,
+	ambient
+}			light_type;
 
-void	put_point_to_image(char *image_data, int x, int y, int color)
+typedef enum
+{
+	sphere,
+	cone,
+	cylinder,
+	plane,
+	triangle
+}			obj_type;
+
+typedef struct s_vector
+{
+	double x;
+	double y;
+	double z;
+
+}		t_vector;
+
+typedef struct s_ray
+{
+	t_vector start;
+	t_vector dir;
+}			t_ray;
+
+typedef struct s_rgb
+{
+	int r;
+	int g;
+	int b;
+}				t_rgb;
+
+typedef struct s_obj
+{
+	int type;
+	t_vector center;
+	t_vector dir;
+	double angle;
+	double radius;
+	t_rgb rgb;
+	double specular;
+	double reflective;
+
+}		t_obj;
+
+
+
+typedef struct s_light
+{
+	int type;
+	double intensity;
+	t_vector center;
+	t_vector direction;
+
+}				t_light;
+
+typedef struct s_camera
+{
+	t_vector center;
+}		t_camera;
+
+
+
+typedef struct s_scene
+{
+	int c_objs;
+	int c_lights;
+	t_camera camera;
+	t_light lights;
+	t_obj objs;
+}		t_scene;
+
+
+t_rgb color_to_rgb(int color)
+{
+	t_rgb rgb;
+
+	rgb.r = color >> 16;
+	rgb.g = (color & 0x00ff00) >> 8;
+	rgb.b = color & 0x0000ff;
+
+	return (rgb);
+}
+
+int rgb_to_color(t_rgb rgb)
+{
+	int color;
+
+	color = rgb.r * 0x010000 + rgb.g * 0x000100 + rgb.b;
+
+	return (color);
+}
+
+t_vector vector_subt(t_vector a, t_vector b)
+{
+	t_vector c;
+
+	c.x = a.x - b.x;
+	c.y = a.y - b.y;
+	c.z = a.z - b.z;
+	return (c);
+}
+
+t_vector vector_sum(t_vector a, t_vector b)
+{
+	t_vector c;
+
+	c.x = a.x + b.x;
+	c.y = a.y + b.y;
+	c.z = a.z + b.z;
+	return (c);
+}
+
+t_vector vector_int_div(t_vector a, double b)
+{
+	t_vector c;
+
+	c.x = a.x / b;
+	c.y = a.y / b;
+	c.z = a.z / b;
+	return (c);
+}
+
+t_vector vector_int_mult(t_vector a, double b)
+{
+	t_vector c;
+
+	c.x = a.x * b;
+	c.y = a.y * b;
+	c.z = a.z * b;
+	return (c);
+}
+
+double scal_mult(t_vector a, t_vector b)
+{
+	double c;
+	c = a.x * b.x + a.y * b.y + a.z * b.z;
+	return (c);
+}
+
+void obj_init(t_obj *obj)
+{
+	obj->center.x = 0.0;
+	obj->center.y = 0.0;
+	obj->center.z = 3.0;
+	obj->radius = 1.0;
+	//obj->color = 0xFFC0CB;
+}
+
+t_vector vector_init(double x, double y, double z)
+{
+	t_vector ret;
+
+	ret.x = x;
+	ret.y = y;
+	ret.z = z;
+	return (ret);
+}
+
+t_vector vector_project(t_vector a, t_vector b)
+{
+	t_vector project;
+	double dot;
+
+	dot = scal_mult(a, b) / scal_mult(b, b);
+	project = vector_int_mult(b, dot);
+	return (project);
+}
+
+t_vector vector_normalize(t_vector a)
+{
+	t_vector c;
+	c = vector_int_div(a, sqrt(scal_mult(a, a)));
+
+	return (c);
+}
+
+void	put_point_to_image(__global char *image_data, int x, int y, int color)
 {
 	int	index = 0;
 
@@ -23,7 +202,7 @@ void	put_point_to_image(char *image_data, int x, int y, int color)
 	}
 }
 
-void	clear_image_data(char *image_data)
+void	clear_image_data(__global char *image_data)
 {
 	int index;
 
@@ -167,9 +346,10 @@ double ray_intersect_obj(t_vector start, t_vector dir, t_obj *obj)
 		return (ray_intersect_cylinder(start, dir, obj));
 	else if (obj->type == plane)
 		return (ray_intersect_plane(start, dir, obj));
+	return(0.0);
 }
 
-double compute_lighting(t_vector P, t_vector N, t_vector V, double s, t_scene *scene)
+double compute_lighting(t_vector P, t_vector N, t_vector V, double s, __global t_scene *scene)
 {
 	double intensity = 0.0;
 
@@ -177,13 +357,13 @@ double compute_lighting(t_vector P, t_vector N, t_vector V, double s, t_scene *s
 	t_vector L;
 	double t;
 	double shadow_t;
-	t_obj *shadow_obj = NULL;
+	t_obj *shadow_obj = 0;
 
 	for (int i = 0; i < scene->c_lights; i++)
 	{
 		shadow_t = 9999;
 		int j = 0;
-		shadow_obj = NULL;
+		shadow_obj = 0;
 		if (scene->lights[i].type == ambient)
 			intensity += scene->lights[i].intensity;
 		else
@@ -253,11 +433,11 @@ t_vector get_normal(t_vector point, t_obj obj)
 	return (normal);
 }
 
-t_obj *get_closest_object(double *closest_t, t_vector start, t_vector dir, t_scene *scene)
+t_obj *get_closest_object(double *closest_t, t_vector start, t_vector dir, __global t_scene *scene)
 {
 	double t = 0.0;
 	int i = 0;
-	t_obj *closest_obj = NULL;
+	t_obj *closest_obj = 0;
 
 
 
@@ -274,7 +454,7 @@ t_obj *get_closest_object(double *closest_t, t_vector start, t_vector dir, t_sce
 	return (closest_obj);
 }
 
-int cast_ray(t_scene *scene, t_vector start, t_vector dir, int depth)
+int cast_ray(__global t_scene *scene, t_vector start, t_vector dir, int depth)
 {
 
 	t_obj closest_obj;
@@ -324,192 +504,12 @@ int cast_ray(t_scene *scene, t_vector start, t_vector dir, int depth)
 	return (0xFFFFFF);
 }
 
-void ray_tracing(char *image_data, t_scene *scene)
+__kernel void kernel(__global char *image_data, __global t_scene *scene)
 {
-	int x;
-	int y;
+	int x = get_global_id(0) / CW;
+	int y = get_global_id(0) % CH;
 	t_vector pixel_pos_3d;
-
-	for (y = -CH/2; y <= CH/2; y++)
-	{
-		for (x = -CW/2; x <= CW/2; x++)
-		{
-			pixel_pos_3d = get_pixel_pisition(x, y);
-			put_point_to_image(image_data, x + CW/2, -y + CH/2, cast_ray(scene, scene->camera.center, pixel_pos_3d, DEPTH));
-		}
-	}
-}
-
-int mouse_pressed(int button, int x, int y, void *param)
-{
-	t_RTv1 *RTv1;
-	t_vector pixel_pos_3d;
-	double trash = 99999.0;
-	t_obj *ptr = NULL;
-	RTv1 = (t_RTv1 *)param;
 
 	pixel_pos_3d = get_pixel_pisition(x - CW / 2, -y + CH / 2);
-	ptr = get_closest_object(&trash, RTv1->scene.camera.center, pixel_pos_3d, &(RTv1->scene));
-	if (ptr)
-		RTv1->selected = ptr;
-}
-
-int key_pressed(int key, void *param)
-{
-	t_RTv1 *RTv1;
-
-	RTv1 = (t_RTv1 *)param;
-
-	if (!RTv1->selected)
-		RTv1->selected = &(RTv1->scene.objs[0]);
-
-	if (key == 0x35)
-	{
-		exit(1);
-	}
-
-	else if (key == 0x7C)
-	{
-		RTv1->selected->center.x += 0.1;
-	}
-	else if (key ==0x7B)
-	{
-		RTv1->selected->center.x -= 0.1;
-	}
-	else if (key ==0x7E)
-	{
-		RTv1->selected->center.y += 0.1;
-	}
-	else if (key ==0x7D)
-	{
-		RTv1->selected->center.y -= 0.1;
-	}
-	provider(RTv1);
-}
-/*
-int cl_source_str_gen(char *file, char **dst)
-{
-	int fd;
-
-	if (!(*dst = (char *)malloc(20000)))
-	{
-		free(*dst);
-		puts("Cannot open kernel files");///////forbidden function
-		exit(1);
-	}
-	if (!(fd = open(file, O_RDONLY)))
-	{
-		free(*dst);
-		puts("Cannot open kernel files");///////forbidden function
-		exit(1);
-	}
-	(*dst)[read(fd, *dst, 20000)] = 0;
-	close(fd);
-	//printf("%d", strlen(*dst));
-	return (strlen(*dst));///////forbidden function
-}
-
-void kernel_init(t_RTv1 *RTv1)
-{
-	strcpy(RTv1->kernel_name, "kernel");/////////////forbidden function
-	RTv1->ret = clGetPlatformIDs(1, &RTv1->platform_id,
-			&RTv1->ret_num_platforms);
-	RTv1->ret = clGetDeviceIDs(RTv1->platform_id,
-			CL_DEVICE_TYPE_GPU, 1, &RTv1->device_id,
-			&RTv1->ret_num_devices);
-	printf ("%d\n", RTv1->ret);
-	RTv1->context = clCreateContext(NULL, 1, &RTv1->device_id,
-			NULL, NULL, &RTv1->ret);
-	RTv1->command_queue = clCreateCommandQueue(RTv1->context,
-			RTv1->device_id, 0, &RTv1->ret);
-	printf ("command %d\n", RTv1->ret);
-	RTv1->source_size = cl_source_str_gen("kernel.cl",
-			&(RTv1->source_str));
-	RTv1->program = clCreateProgramWithSource(RTv1->context, 1,
-			(const char **)&RTv1->source_str,
-			(const size_t *)&RTv1->source_size, &RTv1->ret);
-	printf ("create_program %d\n", RTv1->ret);
-	RTv1->ret = clBuildProgram(RTv1->program, 1,
-			&RTv1->device_id, NULL, NULL, NULL);
-	printf ("build %d\n", RTv1->ret);
-	RTv1->kernel = clCreateKernel(RTv1->program,
-			RTv1->kernel_name, &RTv1->ret);
-			printf ("build %d\n", RTv1->ret);
-	RTv1->memobj = clCreateBuffer(RTv1->context,
-			CL_MEM_READ_WRITE, CW * CH * 4, NULL, &RTv1->ret);
-	RTv1->utils_memobj = clCreateBuffer(RTv1->context,
-			CL_MEM_READ_WRITE, sizeof(t_RTv1), NULL, &RTv1->ret);
-	RTv1->ret = clEnqueueWriteBuffer(RTv1->command_queue,
-			RTv1->memobj, CL_TRUE, 0, CW * CH * 4,
-			RTv1->image_data, 0, NULL, NULL);
-	RTv1->ret = clSetKernelArg(RTv1->kernel, 0,
-			sizeof(cl_mem), (void *)&RTv1->memobj);
-	free(RTv1->source_str);
-}
-*/
-void RTv1_init(t_RTv1 *RTv1, char *file_name)
-{
-	int bytes;
-	int len;
-	int endian;
-
-	bytes = 8;
-	len = SIZE;
-	endian = 0;
-	RTv1->mlx_ptr = mlx_init();
-	read_scene(&(RTv1->scene), file_name);
-
-	RTv1->win_ptr = mlx_new_window(RTv1->mlx_ptr, SIZE, SIZE, "RTv1");
-	RTv1->image = mlx_new_image(RTv1->mlx_ptr, SIZE, SIZE);
-	RTv1->image_data = mlx_get_data_addr(RTv1->image, &bytes, &len, &endian);
-
-	//kernel_init(RTv1);
-}
-
-void provider(t_RTv1 *RTv1)
-{
-	size_t		global_work_size;
-//	puts("lol");
-//	printf("%d", RTv1->ret);
-	/*RTv1->ret = clEnqueueWriteBuffer(RTv1->command_queue,
-			RTv1->utils_memobj, CL_TRUE, 0,
-			sizeof(t_scene), &(RTv1->scene), 0, NULL, NULL);
-
-	RTv1->ret = clSetKernelArg(RTv1->kernel, 1,
-			sizeof(cl_mem), (void *)&RTv1->utils_memobj);
-	global_work_size = CW * CH;
-
-
-	RTv1->ret = clEnqueueNDRangeKernel(RTv1->command_queue,
-			RTv1->kernel, 1, NULL, &global_work_size,
-			NULL, 0, NULL, NULL);
-	RTv1->ret = clEnqueueReadBuffer(RTv1->command_queue,
-			RTv1->memobj, CL_TRUE, 0,
-			CW * CH * 4, RTv1->image_data, 0, NULL, NULL);
-*/
-	ray_tracing(RTv1->image_data, &(RTv1->scene));
-
-	mlx_put_image_to_window(RTv1->mlx_ptr, RTv1->win_ptr, RTv1->image, 0, 0);
-}
-
-int main(int ac, char **av)
-{
-	t_RTv1 RTv1;
-
-	RTv1_init(&RTv1, av[1]);
-	//printf("%f", RTv1.scene.lights[0].intensity);
-	//printf("color %d\n", rgb_to_color(RTv1.scene.objs[0].rgb));
-	provider(&RTv1);
-
-
-	//mlx_mouse_hook(RTv1.win_ptr, mouse_pressed, &RTv1);
-	mlx_hook(RTv1.win_ptr, 2, 4, key_pressed, &RTv1);
-	mlx_hook(RTv1.win_ptr, 4, 0, mouse_pressed, &RTv1);
-//	mlx_hook(RTv1->win_ptr, 5, 1L << 0, mouse_release, RTv1);
-//	mlx_hook(RTv1->win_ptr, 6, 1L << 0, mouse_move, RTv1);
-//	mlx_hook(RTv1->win_ptr, 17, 1L << 0, close_window, &windows_count);
-
-	mlx_loop(RTv1.mlx_ptr);
-
-	return (0);
+	put_point_to_image(image_data, x + CW/2, -y + CH/2, cast_ray(scene, scene->camera.center, pixel_pos_3d, DEPTH));
 }

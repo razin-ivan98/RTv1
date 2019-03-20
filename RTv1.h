@@ -3,6 +3,7 @@
 # include "math.h"
 # include <fcntl.h>
 # include "get_next_line.h"
+# include <OpenCL/opencl.h>
 # include "mlx.h"
 
 typedef enum
@@ -95,6 +96,28 @@ typedef struct s_RTv1
 	t_obj *selected;
 
 	t_scene scene;
+
+	cl_int				ret;
+	cl_platform_id		platform_id;
+	cl_uint				ret_num_platforms;
+
+	cl_device_id		device_id;
+	cl_uint				ret_num_devices;
+
+	cl_context			context;
+	cl_command_queue	command_queue;
+
+	cl_program			program;
+	cl_kernel			kernel;
+
+	char				file_name[40];
+	char				kernel_name[40];
+
+	size_t				source_size;
+	char				*source_str;
+	cl_mem				memobj;
+
+	cl_mem				utils_memobj;
 }			t_RTv1;
 
 void read_scene(t_scene *scene, char* file_name);
