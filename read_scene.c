@@ -17,7 +17,7 @@ t_obj *new_object(t_scene *scene)
 		(*tmp)->next = NULL;
 		puts("first obj");
 		return (*tmp);
-		
+
 	}
 	while (*tmp)
 		*tmp = (*tmp)->next;
@@ -99,10 +99,10 @@ t_light *read_light_parameters(char *line, t_light **light)
 		set_light_type(line, *light);
 	else if (strstr(line, "position"))
 		(*light)->center = read_vector(strchr(line, '=') + 1);
-	
+
 	else if (strstr(line, "direction"))
-		(*light)->direction = vector_normalize(read_vector(strchr(line, '=') + 1));
-	
+		(*light)->dir = vector_normalize(read_vector(strchr(line, '=') + 1));
+
 	else if (strstr(line, "intensity"))
 		(*light)->intensity = ft_atof(strchr(line, '=') + 1);
 	return (*light);
@@ -153,7 +153,7 @@ void read_line_set_scene(char *line, t_scene *scene)
 			i++;
 			obj = &(scene->objs[i]);
 		}
-		
+
 		else if (strstr(line, "light"))
 		{
 			j++;
@@ -165,7 +165,7 @@ void read_line_set_scene(char *line, t_scene *scene)
 		scene->c_objs = i + 1;
 		scene->c_lights = j + 1;
 	}
-	
+
 }
 
 void read_scene(t_scene *scene, char* file_name)

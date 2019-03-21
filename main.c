@@ -1,36 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: chorange <chorange@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/03/20 19:25:19 by cocummin          #+#    #+#             */
+/*   Updated: 2019/03/21 17:47:54 by chorange         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "RTv1.h"
-
-#include <stdio.h>
-# define SIZE 1000
-# define VW 1
-# define VH 1
-# define CW 1000
-# define CH 1000
-# define DEPTH 0
-
-void	put_point_to_image(char *image_data, int x, int y, int color)
-{
-	int	index = 0;
-
-	if (x < 0 || y < 0 || x > SIZE - 1 || y > SIZE - 1)
-		return ;
-	else
-	{
-		index = SIZE * y * 4 + x * 4;
-        image_data[index] = color & 0x0000ff;
-		image_data[index + 2] = color >> 16;
-		image_data[index + 1] = (color & 0x00ff00) >> 8;
-	}
-}
-
-void	clear_image_data(char *image_data)
-{
-	int index;
-
-	index = 0;
-	while (index < SIZE * SIZE * 4)
-		image_data[index++] = 0;
-}
 
 t_vector get_pixel_pisition(int x, int y)
 {
@@ -77,18 +57,13 @@ double ray_intersect_plane(t_vector start, t_vector dir, t_obj *plane)
 
 double ray_intersect_cylinder(t_vector start, t_vector dir, t_obj *cyl)
 {
-	t_ray ray;
-
 	double zeroThreshold = 0.0001;
 
-	ray.start = start;
-	ray.dir = dir;
+	start = vector_subt(start, cyl->center); // перенесем центр координат в центр сферы
 
-	ray.start = vector_subt(ray.start, cyl->center); // перенесем центр координат в центр сферы
-
-	double a = scal_mult(ray.dir, ray.dir) - scal_mult(ray.dir, cyl->dir) * scal_mult(ray.dir, cyl->dir); // Здесь и далее операция * над векторами - скалярное произведение
-	double b = 2 * (scal_mult(ray.dir, ray.start) - scal_mult(ray.dir, cyl->dir) * scal_mult(ray.start, cyl->dir));
-	double c = scal_mult(ray.start, ray.start) - scal_mult(ray.start, cyl->dir) * scal_mult(ray.start, cyl->dir) - cyl->radius * cyl->radius;
+	double a = scal_mult(dir, dir) - scal_mult(dir, cyl->dir) * scal_mult(dir, cyl->dir); // Здесь и далее операция * над векторами - скалярное произведение
+	double b = 2 * (scal_mult(dir, start) - scal_mult(dir, cyl->dir) * scal_mult(start, cyl->dir));
+	double c = scal_mult(start, start) - scal_mult(start, cyl->dir) * scal_mult(start, cyl->dir) - cyl->radius * cyl->radius;
 	double D = b*b - 4*a*c; // Дискриминант
 
 	if ( D < zeroThreshold )
@@ -104,19 +79,14 @@ double ray_intersect_cylinder(t_vector start, t_vector dir, t_obj *cyl)
 
 double ray_intersect_cone(t_vector start, t_vector dir, t_obj *cone)
 {
-	t_ray ray;
-
 	double zeroThreshold = 0.0001;
 
-	ray.start = start;
-	ray.dir = dir;
-
-	ray.start = vector_subt(ray.start, cone->center); // перенесем центр координат в центр сферы
+	start = vector_subt(start, cone->center); // перенесем центр координат в центр сферы
 	double k = tan(cone->angle);
 
-	double a = scal_mult(ray.dir, ray.dir) - (1 + k * k) * ((scal_mult(ray.dir, cone->dir) * (scal_mult(ray.dir, cone->dir)))); // Здесь и далее операция * над векторами - скалярное произведение
-	double b = 2 * (scal_mult(ray.dir, ray.start) - (1 + k * k) * scal_mult(ray.dir, cone->dir) * scal_mult(ray.start, cone->dir));
-	double c = scal_mult(ray.start, ray.start) - (1 + k * k) * ((scal_mult(ray.start, cone->dir)* (scal_mult(ray.start, cone->dir))));
+	double a = scal_mult(dir, dir) - (1 + k * k) * ((scal_mult(dir, cone->dir) * (scal_mult(dir, cone->dir)))); // Здесь и далее операция * над векторами - скалярное произведение
+	double b = 2 * (scal_mult(dir, start) - (1 + k * k) * scal_mult(dir, cone->dir) * scal_mult(start, cone->dir));
+	double c = scal_mult(start, start) - (1 + k * k) * ((scal_mult(start, cone->dir)* (scal_mult(start, cone->dir))));
 	double D = b*b - 4*a*c; // Дискриминант
 
 	if ( D < 0.0 )
@@ -133,17 +103,12 @@ double ray_intersect_cone(t_vector start, t_vector dir, t_obj *cone)
 
 double ray_intersect_sphere(t_vector start, t_vector dir, t_obj *obj)
 {
-	t_ray ray;
-
 	double zeroThreshold = 0.0001;
 
-	ray.start = start;
-	ray.dir = dir;
-
-	ray.start = vector_subt(ray.start, obj->center); // перенесем центр координат в центр сферы
-	double a = scal_mult(ray.dir, ray.dir); // Здесь и далее операция * над векторами - скалярное произведение
-	double b = scal_mult(ray.start, ray.dir);
-	double c = scal_mult(ray.start, ray.start) - obj->radius * obj->radius;
+	start = vector_subt(start, obj->center); // перенесем центр координат в центр сферы
+	double a = scal_mult(dir, dir); // Здесь и далее операция * над векторами - скалярное произведение
+	double b = scal_mult(start, dir);
+	double c = scal_mult(start, start) - obj->radius * obj->radius;
 	double D = b*b -a*c; // Дискриминант
 
 	if ( D < zeroThreshold )
@@ -169,90 +134,6 @@ double ray_intersect_obj(t_vector start, t_vector dir, t_obj *obj)
 		return (ray_intersect_plane(start, dir, obj));
 }
 
-double compute_lighting(t_vector P, t_vector N, t_vector V, double s, t_scene *scene)
-{
-	double intensity = 0.0;
-
-	//t_light lights[3];
-	t_vector L;
-	double t;
-	double shadow_t;
-	t_obj *shadow_obj = NULL;
-
-	for (int i = 0; i < scene->c_lights; i++)
-	{
-		shadow_t = 9999;
-		int j = 0;
-		shadow_obj = NULL;
-		if (scene->lights[i].type == ambient)
-			intensity += scene->lights[i].intensity;
-		else
-		{
-			if (scene->lights[i].type == point)
-				L = vector_subt(scene->lights[i].center, P);
-			else
-				L = scene->lights[i].direction;
-
-			while (j < scene->c_objs)
-			{
-				t = ray_intersect_obj(P, L, &(scene->objs[j]));
-				if (t != 0.0 && t < shadow_t)
-				{
-					shadow_t = t;
-					shadow_obj = &(scene->objs[j]);
-				}
-				j++;
-			}
-			if (shadow_obj)
-				continue ;
-
-			double n_dot_l = scal_mult(N, L);
-			if (n_dot_l > 0.0)
-				intensity += scene->lights[i].intensity * n_dot_l / (sqrt(scal_mult(N, N)) * sqrt(scal_mult(L, L)));
-
-			if (s > 0.0)
-			{
-				t_vector R = reflect_ray(L, N);
-				double r_dot_v = scal_mult(R, V);
-				if (r_dot_v > 0.0)
-					intensity += scene->lights[i].intensity * pow(r_dot_v / (sqrt(scal_mult(R, R)) * sqrt(scal_mult(V, V))), s);
-			}
-		}
-	}
-	return (intensity);
-
-}
-
-t_vector get_normal(t_vector point, t_obj obj)
-{
-	t_vector normal;
-	t_vector project;
-	double k;
-
-	if (obj.type == sphere)
-	{
-		normal = vector_subt(point, obj.center);
-		normal = vector_normalize(normal);
-	}
-	else if (obj.type == cylinder)
-	{
-		normal = vector_subt(point, obj.center);
-		project = vector_project(normal, obj.dir);
-		normal = vector_normalize(vector_subt(normal, project));
-	}
-	else if (obj.type == plane)
-		normal = obj.dir;
-	else if (obj.type == cone)
-	{
-		normal = vector_subt(point, obj.center);
-		project = vector_project(normal, obj.dir);
-		k = 1 + tan(obj.angle) * tan(obj.angle);
-		project = vector_int_mult(project, k);
-		normal = vector_normalize(vector_subt(normal, project));
-	}
-	return (normal);
-}
-
 t_obj *get_closest_object(double *closest_t, t_vector start, t_vector dir, t_scene *scene)
 {
 	double t = 0.0;
@@ -274,70 +155,34 @@ t_obj *get_closest_object(double *closest_t, t_vector start, t_vector dir, t_sce
 	return (closest_obj);
 }
 
-int cast_ray(t_scene *scene, t_vector start, t_vector dir, int depth)
+
+
+
+
+
+
+
+void scene_init(t_RTv1 *RTv1, char *file_name)
 {
-
-	t_obj closest_obj;
-	t_obj *ptr;
-	double closest_t;
-	closest_t = 99999.0;
-	double intensity;
-	double t = 0.0;
-	int i = 0;
-
-	ptr = get_closest_object(&closest_t, start, dir, scene);
-	if (!ptr)
-		return(0x000000);
-
-	if (ptr)
-	{
-		closest_obj = *ptr;
-
-		t_vector P = vector_sum(start, vector_int_mult(dir, closest_t));
-
-		t_vector N = get_normal(P, closest_obj);
-
-		intensity = compute_lighting(P, N, vector_int_mult(dir, -1.0), closest_obj.specular, scene);
-
-		if ((closest_obj.rgb.r *= intensity) >= 255.0)
-			closest_obj.rgb.r = 255.0;
-		if ((closest_obj.rgb.g *= intensity) >= 255.0)
-			closest_obj.rgb.g = 255.0;
-		if ((closest_obj.rgb.b *= intensity) >= 255.0)
-			closest_obj.rgb.b = 255.0;
-
-		if (depth <= 0 || closest_obj.reflective <= 0)
-			return (rgb_to_color(closest_obj.rgb));
-
-		t_vector R = reflect_ray(vector_int_mult(dir, -1.0), N);
-
-		t_rgb reflected = color_to_rgb(cast_ray(scene, P, R, depth - 1));
-
-		if ((closest_obj.rgb.r = closest_obj.rgb.r * (1 - closest_obj.reflective) + reflected.r * closest_obj.reflective) > 255.0)
-			closest_obj.rgb.r = 255.0;
-		if ((closest_obj.rgb.g = closest_obj.rgb.g * (1 - closest_obj.reflective) + reflected.g * closest_obj.reflective) > 255.0)
-			closest_obj.rgb.g = 255.0;
-		if ((closest_obj.rgb.b = closest_obj.rgb.b * (1 - closest_obj.reflective) + reflected.b * closest_obj.reflective) > 255.0)
-			closest_obj.rgb.b = 255.0;
-		return (rgb_to_color(closest_obj.rgb));
-	}
-	return (0xFFFFFF);
+    read_scene(&(RTv1->scene), file_name);
 }
 
-void ray_tracing(char *image_data, t_scene *scene)
+void provider(t_RTv1 *RTv1)
 {
-	int x;
-	int y;
-	t_vector pixel_pos_3d;
+    size_t global_work_size = CW * CH;
 
-	for (y = -CH/2; y <= CH/2; y++)
-	{
-		for (x = -CW/2; x <= CW/2; x++)
-		{
-			pixel_pos_3d = get_pixel_pisition(x, y);
-			put_point_to_image(image_data, x + CW/2, -y + CH/2, cast_ray(scene, scene->camera.center, pixel_pos_3d, DEPTH));
-		}
-	}
+    RTv1->ret = clEnqueueWriteBuffer(RTv1->command_queue,
+			RTv1->utils_memobj, CL_TRUE, 0,
+			sizeof(t_scene), &(RTv1->scene), 0, NULL, NULL);
+
+	RTv1->ret = clSetKernelArg(RTv1->kernel, 1,
+			sizeof(cl_mem), (void *)&RTv1->utils_memobj);
+
+
+    RTv1->ret = clEnqueueNDRangeKernel(RTv1->command_queue, RTv1->kernel, 1, NULL, &global_work_size, NULL, 0, NULL, NULL);
+    RTv1->ret = clEnqueueReadBuffer(RTv1->command_queue, RTv1->memobj, CL_TRUE, 0, CW * CH * 4, RTv1->image_data, 0, NULL, NULL);
+
+    mlx_put_image_to_window(RTv1->mlx_ptr, RTv1->win_ptr, RTv1->image, 0, 0);
 }
 
 int mouse_pressed(int button, int x, int y, void *param)
@@ -349,9 +194,14 @@ int mouse_pressed(int button, int x, int y, void *param)
 	RTv1 = (t_RTv1 *)param;
 
 	pixel_pos_3d = get_pixel_pisition(x - CW / 2, -y + CH / 2);
+    printf("x  %d\n", x - CW / 2);
+    printf("y  %d\n", -y + CH / 2);
 	ptr = get_closest_object(&trash, RTv1->scene.camera.center, pixel_pos_3d, &(RTv1->scene));
 	if (ptr)
 		RTv1->selected = ptr;
+
+
+    ft_putendl("lol");
 }
 
 int key_pressed(int key, void *param)
@@ -386,130 +236,28 @@ int key_pressed(int key, void *param)
 	}
 	provider(RTv1);
 }
-/*
-int cl_source_str_gen(char *file, char **dst)
-{
-	int fd;
 
-	if (!(*dst = (char *)malloc(20000)))
-	{
-		free(*dst);
-		puts("Cannot open kernel files");///////forbidden function
-		exit(1);
-	}
-	if (!(fd = open(file, O_RDONLY)))
-	{
-		free(*dst);
-		puts("Cannot open kernel files");///////forbidden function
-		exit(1);
-	}
-	(*dst)[read(fd, *dst, 20000)] = 0;
-	close(fd);
-	//printf("%d", strlen(*dst));
-	return (strlen(*dst));///////forbidden function
-}
-
-void kernel_init(t_RTv1 *RTv1)
-{
-	strcpy(RTv1->kernel_name, "kernel");/////////////forbidden function
-	RTv1->ret = clGetPlatformIDs(1, &RTv1->platform_id,
-			&RTv1->ret_num_platforms);
-	RTv1->ret = clGetDeviceIDs(RTv1->platform_id,
-			CL_DEVICE_TYPE_GPU, 1, &RTv1->device_id,
-			&RTv1->ret_num_devices);
-	printf ("%d\n", RTv1->ret);
-	RTv1->context = clCreateContext(NULL, 1, &RTv1->device_id,
-			NULL, NULL, &RTv1->ret);
-	RTv1->command_queue = clCreateCommandQueue(RTv1->context,
-			RTv1->device_id, 0, &RTv1->ret);
-	printf ("command %d\n", RTv1->ret);
-	RTv1->source_size = cl_source_str_gen("kernel.cl",
-			&(RTv1->source_str));
-	RTv1->program = clCreateProgramWithSource(RTv1->context, 1,
-			(const char **)&RTv1->source_str,
-			(const size_t *)&RTv1->source_size, &RTv1->ret);
-	printf ("create_program %d\n", RTv1->ret);
-	RTv1->ret = clBuildProgram(RTv1->program, 1,
-			&RTv1->device_id, NULL, NULL, NULL);
-	printf ("build %d\n", RTv1->ret);
-	RTv1->kernel = clCreateKernel(RTv1->program,
-			RTv1->kernel_name, &RTv1->ret);
-			printf ("build %d\n", RTv1->ret);
-	RTv1->memobj = clCreateBuffer(RTv1->context,
-			CL_MEM_READ_WRITE, CW * CH * 4, NULL, &RTv1->ret);
-	RTv1->utils_memobj = clCreateBuffer(RTv1->context,
-			CL_MEM_READ_WRITE, sizeof(t_RTv1), NULL, &RTv1->ret);
-	RTv1->ret = clEnqueueWriteBuffer(RTv1->command_queue,
-			RTv1->memobj, CL_TRUE, 0, CW * CH * 4,
-			RTv1->image_data, 0, NULL, NULL);
-	RTv1->ret = clSetKernelArg(RTv1->kernel, 0,
-			sizeof(cl_mem), (void *)&RTv1->memobj);
-	free(RTv1->source_str);
-}
-*/
-void RTv1_init(t_RTv1 *RTv1, char *file_name)
-{
-	int bytes;
-	int len;
-	int endian;
-
-	bytes = 8;
-	len = SIZE;
-	endian = 0;
-	RTv1->mlx_ptr = mlx_init();
-	read_scene(&(RTv1->scene), file_name);
-
-	RTv1->win_ptr = mlx_new_window(RTv1->mlx_ptr, SIZE, SIZE, "RTv1");
-	RTv1->image = mlx_new_image(RTv1->mlx_ptr, SIZE, SIZE);
-	RTv1->image_data = mlx_get_data_addr(RTv1->image, &bytes, &len, &endian);
-
-	//kernel_init(RTv1);
-}
-
-void provider(t_RTv1 *RTv1)
-{
-	size_t		global_work_size;
-//	puts("lol");
-//	printf("%d", RTv1->ret);
-	/*RTv1->ret = clEnqueueWriteBuffer(RTv1->command_queue,
-			RTv1->utils_memobj, CL_TRUE, 0,
-			sizeof(t_scene), &(RTv1->scene), 0, NULL, NULL);
-
-	RTv1->ret = clSetKernelArg(RTv1->kernel, 1,
-			sizeof(cl_mem), (void *)&RTv1->utils_memobj);
-	global_work_size = CW * CH;
-
-
-	RTv1->ret = clEnqueueNDRangeKernel(RTv1->command_queue,
-			RTv1->kernel, 1, NULL, &global_work_size,
-			NULL, 0, NULL, NULL);
-	RTv1->ret = clEnqueueReadBuffer(RTv1->command_queue,
-			RTv1->memobj, CL_TRUE, 0,
-			CW * CH * 4, RTv1->image_data, 0, NULL, NULL);
-*/
-	ray_tracing(RTv1->image_data, &(RTv1->scene));
-
-	mlx_put_image_to_window(RTv1->mlx_ptr, RTv1->win_ptr, RTv1->image, 0, 0);
-}
 
 int main(int ac, char **av)
 {
-	t_RTv1 RTv1;
+    t_RTv1 RTv1;
 
-	RTv1_init(&RTv1, av[1]);
-	//printf("%f", RTv1.scene.lights[0].intensity);
-	//printf("color %d\n", rgb_to_color(RTv1.scene.objs[0].rgb));
-	provider(&RTv1);
+    if (ac != 2)
+        exit(-1);
+
+    graphics_init(&RTv1);
+    scene_init(&RTv1, av[1]);
+    provider(&RTv1);
 
 
-	//mlx_mouse_hook(RTv1.win_ptr, mouse_pressed, &RTv1);
+
+
+
+
 	mlx_hook(RTv1.win_ptr, 2, 4, key_pressed, &RTv1);
 	mlx_hook(RTv1.win_ptr, 4, 0, mouse_pressed, &RTv1);
-//	mlx_hook(RTv1->win_ptr, 5, 1L << 0, mouse_release, RTv1);
-//	mlx_hook(RTv1->win_ptr, 6, 1L << 0, mouse_move, RTv1);
-//	mlx_hook(RTv1->win_ptr, 17, 1L << 0, close_window, &windows_count);
 
-	mlx_loop(RTv1.mlx_ptr);
-
-	return (0);
+    mlx_loop(RTv1.mlx_ptr);
+    return (0);
 }
+

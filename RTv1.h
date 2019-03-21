@@ -5,6 +5,13 @@
 # include "get_next_line.h"
 # include <OpenCL/opencl.h>
 # include "mlx.h"
+# include "libft/libft.h"
+
+#define MAX_SOURCE_SIZE 20000
+#define CW 1000
+#define CH 1000
+#define VW 1
+#define VH 1
 
 typedef enum
 {
@@ -31,13 +38,13 @@ typedef struct s_vector
 	double z;
 
 }		t_vector;
-
+/*
 typedef struct s_ray
 {
 	t_vector start;
 	t_vector dir;
 }			t_ray;
-
+*/
 typedef struct s_rgb
 {
 	int r;
@@ -66,7 +73,7 @@ typedef struct s_light
 	int type;
 	double intensity;
 	t_vector center;
-	t_vector direction;
+	t_vector dir;
 
 //	struct s_light *next;
 }				t_light;
@@ -113,8 +120,6 @@ typedef struct s_RTv1
 	char				file_name[40];
 	char				kernel_name[40];
 
-	size_t				source_size;
-	char				*source_str;
 	cl_mem				memobj;
 
 	cl_mem				utils_memobj;
@@ -134,10 +139,14 @@ t_vector vector_sum(t_vector a, t_vector b);
 t_vector vector_int_mult(t_vector a, double b);
 t_vector vector_int_div(t_vector a, double b);
 double scal_mult(t_vector a, t_vector b);
-void obj_init(t_obj *obj);
+//void obj_init(t_obj *obj);
 t_vector vector_init(double x, double y, double z);
 
 t_rgb color_to_rgb(int color);
 int rgb_to_color(t_rgb rgb);
+
+
+
+void graphics_init(t_RTv1 *RTv1);
 
 #endif
