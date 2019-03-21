@@ -6,7 +6,7 @@
 /*   By: chorange <chorange@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/03/20 19:25:19 by cocummin          #+#    #+#             */
-/*   Updated: 2019/03/21 17:47:54 by chorange         ###   ########.fr       */
+/*   Updated: 2019/03/21 21:00:16 by chorange         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,16 +193,27 @@ int mouse_pressed(int button, int x, int y, void *param)
 	t_obj *ptr = NULL;
 	RTv1 = (t_RTv1 *)param;
 
-	pixel_pos_3d = get_pixel_pisition(x - CW / 2, -y + CH / 2);
-    printf("x  %d\n", x - CW / 2);
-    printf("y  %d\n", -y + CH / 2);
-	ptr = get_closest_object(&trash, RTv1->scene.camera.center, pixel_pos_3d, &(RTv1->scene));
-	if (ptr)
-		RTv1->selected = ptr;
+	if (button == 1)
+	{
+		pixel_pos_3d = get_pixel_pisition(x - CW / 2, -y + CH / 2);
 
+		ptr = get_closest_object(&trash, RTv1->scene.camera.center, pixel_pos_3d, &(RTv1->scene));
+		if (ptr)
+			RTv1->selected = ptr;
+	}
 
-    ft_putendl("lol");
+	else if (button == 4)
+	{
+		RTv1->scene.camera.center.z -= 0.2;
+	}
+
+	else if (button == 5)
+		RTv1->scene.camera.center.z += 0.2;
+
+	provider(RTv1);
+	return (0);
 }
+
 
 int key_pressed(int key, void *param)
 {
@@ -220,19 +231,27 @@ int key_pressed(int key, void *param)
 
 	else if (key == 0x7C)
 	{
-		RTv1->selected->center.x += 0.1;
+		RTv1->selected->center.x += 0.05;
 	}
 	else if (key ==0x7B)
 	{
-		RTv1->selected->center.x -= 0.1;
+		RTv1->selected->center.x -= 0.05;
 	}
 	else if (key ==0x7E)
 	{
-		RTv1->selected->center.y += 0.1;
+		RTv1->selected->center.y += 0.05;
 	}
 	else if (key ==0x7D)
 	{
-		RTv1->selected->center.y -= 0.1;
+		RTv1->selected->center.y -= 0.05;
+	}
+	else if (key ==0x5B)
+	{
+		RTv1->selected->center.z += 0.05;
+	}
+	else if (key ==0x54)
+	{
+		RTv1->selected->center.z -= 0.05;
 	}
 	provider(RTv1);
 }

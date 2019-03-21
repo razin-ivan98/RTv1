@@ -397,9 +397,11 @@ int cast_ray(t_cl_scene *cl_scene, double3 start, double3 dir, int depth)
 {
 	t_cl_obj closest_obj;
 	t_cl_obj *ptr;
-	double closest_t = 99999.0;
+	double closest_t;
 	double intensity;
 
+
+	closest_t = 99999.0;
 	ptr = get_closest_object(&closest_t, start, dir, cl_scene);
 
 	if (ptr)
@@ -420,7 +422,7 @@ int cast_ray(t_cl_scene *cl_scene, double3 start, double3 dir, int depth)
 			closest_obj.rgb.b = 255.0;
 
 		if (depth <= 0 || closest_obj.reflective <= 0)
-			return (rgb_to_color(closest_obj.rgb));
+			return (rgb_to_color(closest_obj.rgb));////////////////////////////////break ;
 
 		double3 R = reflect_ray((-1.0) * dir, N);
 /*
