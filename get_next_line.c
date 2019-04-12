@@ -6,7 +6,7 @@
 /*   By: chorange <chorange@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/12/10 06:30:59 by chorange          #+#    #+#             */
-/*   Updated: 2019/02/18 22:18:21 by chorange         ###   ########.fr       */
+/*   Updated: 2019/02/21 17:44:46 by chorange         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,13 +43,13 @@ int		remallocjoin(char **dst, char *src)
 {
 	char	*tmp;
 
-	MALLCHECK((tmp = (char *)malloc(strlen(*dst) + 1)));
-	strcpy(tmp, *dst);
+	MALLCHECK((tmp = (char *)malloc(ft_strlen(*dst) + 1)));
+	ft_strcpy(tmp, *dst);
 	free(*dst);
 	*dst = NULL;
-	MALLCHECK((*dst = (char *)malloc(strlen(tmp) + strlen(src) + 1)));
-	strcpy(*dst, tmp);
-	strcat(*dst, src);
+	MALLCHECK((*dst = (char *)malloc(ft_strlen(tmp) + ft_strlen(src) + 1)));
+	ft_strcpy(*dst, tmp);
+	ft_strcat(*dst, src);
 	free(tmp);
 	return (0);
 }
@@ -58,7 +58,7 @@ int		cycle_body(char *buf, t_file *file, int *read_chars, char **line)
 {
 	if (file->reserv[0])
 	{
-		strcpy(buf, file->reserv);
+		ft_strcpy(buf, file->reserv);
 		file->reserv[0] = 0;
 	}
 	else
@@ -68,10 +68,10 @@ int		cycle_body(char *buf, t_file *file, int *read_chars, char **line)
 			return ((*line[0]) ? 1 : 0);
 		buf[*read_chars] = '\0';
 	}
-	if (strchr(buf, '\n'))
+	if (ft_strchr(buf, '\n'))
 	{
-		strcpy(file->reserv, strchr(buf, '\n') + 1);
-		*(strchr(buf, '\n')) = '\0';
+		ft_strcpy(file->reserv, ft_strchr(buf, '\n') + 1);
+		*(ft_strchr(buf, '\n')) = '\0';
 		if (remallocjoin(line, buf) == -1)
 			return (-1);
 		return (1);

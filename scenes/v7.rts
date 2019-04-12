@@ -1,0 +1,188 @@
+camera_init
+{
+	position = (0.0, 0.0, -17.0)
+	direction = (0.0, 0.0, 1.0)
+}
+
+new light
+{
+	type = point
+	intensity = 0.45
+	position = (-12.0, 2.0, -15.0)
+}
+
+new light
+{
+	type = point
+	intensity = 0.45
+	position = (12.0, 2.0, -15.0)
+}
+
+new light
+{
+	type = ambient
+	intensity = 0.1
+}
+
+new object
+{
+	type = plane;
+	position = (0.0, -5.0, 0.0)
+	direction = (0.0, 1.0, 0.0)
+	color = 65230
+	specular = 0.0
+	reflective = 0.0
+}
+new object
+{
+	type = plane;
+	position = (0.0, 5.0, 0.0)
+	direction = (0.0, -1.0, 0.0)
+	color = 65230
+	specular = 0.0
+	reflective = 0.0
+}
+new object
+{
+	type = plane;
+	position = (0.0, -0.0, 30.0)
+	direction = (0.0, 0.0, -1.0)
+	color = 65230
+	specular = 0.0
+	reflective = 0.0
+}
+
+
+
+
+
+
+
+
+new object
+{
+	type = cylinder
+	radius = 1.0
+	direction = (0.0, 1.0, 0.0)
+	position = (5.0, 0.0, -1.0)
+	color = 65280
+	specular = 50.0
+	reflective = 0.0
+}
+new object
+{
+	type = cylinder
+	radius = 1.0
+	direction = (0.0, 1.0, 0.0)
+	position = (5.0, 0.0, 10.0)
+	color = 65280
+	specular = 50.0
+	reflective = 0.0
+}
+new object
+{
+	type = cylinder
+	radius = 1.0
+	direction = (0.0, 1.0, 0.0)
+	position = (-5.0, 0.0, -1.0)
+	color = 65280
+	specular = 50.0
+	reflective = 0.0
+}
+new object
+{
+	type = cylinder
+	radius = 1.0
+	direction = (0.0, 1.0, 0.0)
+	position = (-5.0, 0.0, 10.0)
+	color = 65280
+	specular = 50.0
+	reflective = 0.0
+}
+
+
+new object
+{
+	type = sphere;
+	position = (5.0, 5.0, -1)
+	radius = 2.0
+	color = 16711680
+	specular = 100.0
+	reflective = 0.0
+}
+new object
+{
+	type = sphere;
+	position = (-5.0, 5.0, -1.0)
+	radius = 2.0
+	color = 16711680
+	specular = 100.0
+	reflective = 0.0
+}
+new object
+{
+	type = sphere;
+	position = (5.0, 5.0, 10.0)
+	radius = 2.0
+	color = 16711680
+	specular = 100.0
+	reflective = 0.0
+}
+new object
+{
+	type = sphere;
+	position = (-5.0, 5.0, 10.0)
+	radius = 2.0
+	color = 16711680
+	specular = 100.0
+	reflective = 0.0
+}
+
+new object
+{
+	type = sphere;
+	position = (5.0, -5.0, -1.0)
+	radius = 2.0
+	color = 16711680
+	specular = 100.0
+	reflective = 0.0
+}
+new object
+{
+	type = sphere;
+	position = (-5.0, -5.0, -1.0)
+	radius = 2.0
+	color = 16711680
+	specular = 100.0
+	reflective = 0.0
+}
+new object
+{
+	type = sphere;
+	position = (5.0, -5.0, 10.0)
+	radius = 2.0
+	color = 16711680
+	specular = 100.0
+	reflective = 0.0
+}
+new object
+{
+	type = sphere;
+	position = (-5.0, -5, 10.0)
+	radius = 2.0
+	color = 16711680
+	specular = 100.0
+	reflective = 0.0
+}
+
+new object
+{
+	type = sphere;
+	position = (0.0, -4.0, 0)
+	radius = 1.2
+	color = 255
+	specular = 5.0
+	reflective = 0.0
+}
+
+end

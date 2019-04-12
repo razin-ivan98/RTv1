@@ -1,0 +1,33 @@
+camera_init
+{
+	position = (0.0, 0.0, -3.0)
+	direction = (0.0, 0.0, 1.0)
+}
+
+
+new light
+{
+	type = point
+	intensity = 0.3
+	position = (2.0, 1.0, 2.4)
+}
+
+new light
+{
+	type = ambient
+	intensity = 0.1
+}
+
+
+new object
+{
+	type = cylinder
+	radius = 1.0
+	direction = (0.0, 1.0, 0.0)
+	position = (0.0, 0.0, 4.0)
+	color = 65280
+	specular = 0.0
+	reflective = 0.0
+}
+
+end

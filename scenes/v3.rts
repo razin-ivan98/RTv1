@@ -1,0 +1,36 @@
+camera_init
+{
+	position = (0.0, 0.0, -5.0)
+	direction = (0.0, 0.0, 1.0)
+}
+
+new light
+{
+	type = point
+	intensity = 0.8
+	position = (2.0, 1.0, 0.0)
+}
+
+new object
+{
+	type = plane
+	direction = (0.0, 1.0, 0.0)
+	position = (-1.0, -1.0, 0.0)
+	color = 255
+	specular = 0.0
+	reflective = 0.0
+}
+
+new object
+{
+	type = cone
+	angle = 0.7
+	direction = (-0.0, 1.0, 0.0)
+	position = (0.0, -0.5, 4.3)
+	color = 16776960
+	specular = 0.0
+	reflective = 0.0
+}
+
+
+end
